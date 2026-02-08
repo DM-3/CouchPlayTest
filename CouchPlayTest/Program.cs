@@ -21,8 +21,8 @@ class Program
     public static readonly byte[] Blue    = [0,   0,   255, 255];
     public static readonly byte[] Green   = [0,   255, 0  , 255];
 
-    public static readonly Font LowRough = new(@"Data\FontAtlases\5_7_1_LowRough.png");
-    public static readonly Font TitleRough = new(@"Data\FontAtlases\10_14_1_TitleRough.png");
+    public static readonly Font LowRough = new(@"Data/FontAtlases/5_7_1_LowRough.png");
+    public static readonly Font TitleRough = new(@"Data/FontAtlases/10_14_1_TitleRough.png");
     
     static void Main(string[] args)
     {
