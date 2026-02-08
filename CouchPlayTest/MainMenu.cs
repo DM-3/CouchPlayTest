@@ -18,16 +18,18 @@ public class MainMenu
     readonly int _numberOfPools = GameTypes.Length;
 
     int _peopleConnected;
-
     readonly List<Player> _players = [];
+
     static readonly Type[] GameTypes = [ typeof(Squares), typeof(Test)];
     static Game? _selectedGame = null;
     static double _gameCountDown = 0;
     const int CountDownSeconds = 2;
     static int _playersVoted = 0;
-
+    
     public void Update(double delta)
     {
+        SideMenu.Update(delta);
+        
         if (_selectedGame != null) {
             _selectedGame.Update(delta);
             return;
@@ -66,33 +68,12 @@ public class MainMenu
     {
         if (_selectedGame != null) {
             _selectedGame.Render();
-            return;
+            SideMenu.RenderGameSideMenu(_selectedGame.GameName);
         }
-        
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos("Input UP to connect.", Program.LowRough), 70, "Input UP to connect.", Program.LowRough, Program.White);
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos(("Players Connected: " + _peopleConnected), Program.LowRough), 80, ("Players Connected: " + _peopleConnected), Program.LowRough, Program.White);
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos(Program.Title, Program.TitleRough), 90, Program.Title, Program.TitleRough, [160, 255, 255, 255]
-        );
-        FontUtility.DrawString(10, 200, "Players Voted: " + _playersVoted, Program.LowRough, Program.White);
-
-        FontUtility.DrawString(10, 10, "Controllers Connected: ", Program.LowRough, Program.White);
-        if(_players.Any(p => p is Wasd)) FontUtility.DrawString(10, 18, "WASD", Program.LowRough, Program.White);
-        if(_players.Any(p => p is Arrows)) FontUtility.DrawString(10, 26, "Arrows", Program.LowRough, Program.White);
-        if(_players.Any(p => p is Controller)) FontUtility.DrawString(10, 34, "Controller", Program.LowRough, Program.White);
-
-        for (var g = 0; g < GameTypes.Length; g++) {
-            DrawVotePool(g, GameTypes[g].Name, Program.White);
+        else {
+            RenderMainMenu();
+            SideMenu.RenderMainSideMenu();
         }
-
-        for (var p = 0; p < _players.Count; p++) {
-            var player = _players[p];
-            DrawPoolVote(player.MenuVotePoolIndex, p, _players[p].Color);
-        }
-
-        if (_playersVoted != _players.Count || _playersVoted == 0) return;
-        Utility.DrawRectangle(0, Program.ScreenSize/2 - 20 - 20, Program.ScreenSize, 40, [150,150,150, 255]);
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos("All players have voted.", Program.LowRough), Program.ScreenSize/2 - 20 - 20 + 7, "All players have voted.", Program.LowRough, Program.White);
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos("Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough), Program.ScreenSize/2 - 20 + 2, "Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough, Program.White);
     }
 
     void PlayerMenuController(Player? player, double deltaTime)
@@ -159,6 +140,33 @@ public class MainMenu
         return currentVotePoolIndex > _numberOfPools-1 ? 0 : currentVotePoolIndex < 0 ? _numberOfPools-1 : currentVotePoolIndex;
     }
 
+    void RenderMainMenu()
+    {
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Input UP to connect.", Program.LowRough), 70, "Input UP to connect.", Program.LowRough, Program.White);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Players Connected: " + _peopleConnected, Program.LowRough), 80, "Players Connected: " + _peopleConnected, Program.LowRough, Program.White);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos(Program.Title, Program.TitleRough), 90, Program.Title, Program.TitleRough, [160, 255, 255, 255]);
+
+        FontUtility.DrawString(10, 200, "Players Voted: " + _playersVoted, Program.LowRough, Program.White);
+
+        FontUtility.DrawString(10, 10, "Controllers Connected:", Program.LowRough, Program.White);
+        if (_players.Any(p => p is Wasd)) FontUtility.DrawString(10, 18, "WASD", Program.LowRough, Program.White);
+        if (_players.Any(p => p is Arrows)) FontUtility.DrawString(10, 26, "Arrows", Program.LowRough, Program.White);
+        if (_players.Any(p => p is Controller)) FontUtility.DrawString(10, 34, "Controller", Program.LowRough, Program.White);
+
+        for (var g = 0; g < GameTypes.Length; g++)
+            DrawVotePool(g, GameTypes[g].Name, Program.White);
+
+        for (var p = 0; p < _players.Count; p++)
+            DrawPoolVote(_players[p].MenuVotePoolIndex, p, _players[p].Color);
+
+        if (_playersVoted != _players.Count || _playersVoted == 0)
+            return;
+
+        Utility.DrawRectangle(0, Program.ScreenSize / 2 - 40, Program.ScreenSize, 40, [150,150,150,255]);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("All players have voted.", Program.LowRough), Program.ScreenSize / 2 - 33, "All players have voted.", Program.LowRough, Program.White);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough), Program.ScreenSize / 2 - 18, "Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough, Program.White);
+    }
+    
     void DrawVotePool(int poolIndex, string gameName, byte[] color)
     {
         int x = (int)Math.Round(Program.ScreenSize / (float)(_numberOfPools + 1) * (poolIndex + 1) - VotePoolWidth / 2f);

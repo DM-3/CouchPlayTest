@@ -22,6 +22,6 @@ public class Squares(Player[] players) : Game(players, "Squares")
             player.Render();
             player.DrawPlayer();
         }
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos("Welcome to Squares!", Program.LowRough), 10, "Welcome to Squares!", Program.LowRough, Program.Cyan);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Squares!", Program.LowRough), 10, "Welcome to Squares!", Program.LowRough, Program.Cyan);
     }
 }

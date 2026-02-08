@@ -42,11 +42,6 @@ public static class Utility
         } 
     }
     
-    public static int GetTextCenteredTextPos(string text, Font.Font font)
-    {
-        return Program.ScreenSize / 2 - ((font.FontData.dimensions[0] * text.Length) + (text.Length - 1)) / 2;
-    }
-    
     public static Vector2 ClampMagnitude(Vector2 v, float maxLength)
     {
         var magnitude = (float)Math.Sqrt(v.X * v.X + v.Y * v.Y);
@@ -54,6 +49,10 @@ public static class Utility
         if (!(magnitude > maxLength) || !(magnitude > 0)) return new Vector2(v.X, v.Y);
         var scale = maxLength / magnitude;
         return new Vector2(v.X * scale, v.Y * scale);
-
+    }
+    
+    public static float Lerp(float a, float b, float t)
+    {
+        return a + (b - a) * Math.Clamp(t, 0, 1);
     }
 }

@@ -20,6 +20,6 @@ public class Test(Player[] players) : Game(players, "Test")
         foreach (var player in _players) {
             player.Render();
         }
-        FontUtility.DrawString(Utility.GetTextCenteredTextPos("Welcome to Test!", Program.LowRough), 10, "Welcome to Test!", Program.LowRough, Program.Cyan);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Test!", Program.LowRough), 10, "Welcome to Test!", Program.LowRough, Program.Cyan);
     }
 }

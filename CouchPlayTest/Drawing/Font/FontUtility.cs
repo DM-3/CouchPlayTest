@@ -86,10 +86,10 @@ public static class FontUtility
     }
 
     
-    public static void DrawString(int x, int y, string text, Font font, byte[] color)
+    public static void DrawString(int x, int y, string str, Font font, byte[] color)
     {
         ushort index = 0;
-        foreach (char c in text.ToUpper()) {
+        foreach (char c in str.ToUpper()) {
             if (c == ' ' || _unrecognizedCharacters.Contains(c)) {index++; continue;}
             if(CharacterMap.TryGetValue(c, out int charId)) { }
             else if(!_unrecognizedCharacters.Contains(c)) {
@@ -100,4 +100,14 @@ public static class FontUtility
         }
     }
     #endregion
+
+    public static int GetStringWidth(string str, Font font)
+    {
+        return  font.FontData.dimensions[0] * str.Length + (str.Length - 1);
+    }
+    
+    public static int GetStringCenteredPos(string str, Font font)
+    {
+        return Program.ScreenSize / 2 - GetStringWidth(str, font) / 2;
+    }
 }
