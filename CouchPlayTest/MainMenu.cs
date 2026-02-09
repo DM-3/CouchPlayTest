@@ -5,7 +5,9 @@ using CouchPlayTest.Games;
 using CouchPlayTest.Utilities;
 using CouchPlayTest.Players;
 using CouchPlayTest.Utilities;
+using CouchPlayTest.Utilities.UI;
 using Raylib_cs;
+using static CouchPlayTest.Utilities.UI.UiInteractable;
 using Font = CouchPlayTest.Drawing.Font.Font;
 
 namespace CouchPlayTest;
@@ -40,8 +42,10 @@ public class MainMenu
         if((Raylib.IsGamepadButtonDown(0, GamepadButton.LeftFaceUp) || (Raylib.GetGamepadAxisMovement(0, GamepadAxis.LeftY) < -0.5f )) && _players.All(p => p.GetType() != new Controller().GetType())) _players.Add(new Controller());
         _peopleConnected = _players.Count;
 
+        _playersVoted = 0; 
         foreach (var player in _players) {
             PlayerMenuController(player, delta);
+            if (player.Voted != -1) _playersVoted++; else if(_playersVoted!=0) _playersVoted--;
         }
 
         if (_playersVoted == _players.Count && _players.Count > 0) {
@@ -54,14 +58,15 @@ public class MainMenu
             _playersVoted = 0;
             var votes = new int[GameTypes.Length];
             foreach (var player in _players) {
-                votes[player.MenuVoted]++;
-                player.MenuVoted = -1;
+                votes[player.Voted]++;
+                player.Voted = -1;
             }
-            var mostVotedIndex = -1;
+            var mostVotedIndex = 0;
             for (var i = 0; i < votes.Length; i++) {
-                if (votes[i] > mostVotedIndex) mostVotedIndex = i;
+                if (votes[i] > votes[mostVotedIndex]) mostVotedIndex = i;
             }
             _selectedGame = (Activator.CreateInstance(GameTypes[mostVotedIndex], [_players.ToArray()]) as Game);
+            SideMenu.IsOpen = false;
         }
     }
     public void Render()
@@ -76,70 +81,32 @@ public class MainMenu
         }
     }
 
-    void PlayerMenuController(Player? player, double deltaTime)
+    void PlayerMenuController(Player player, double deltaTime)
     {
-        #region Voting Button
-        switch (player!.MenuVoted) {
-            case -1 when player.GetSpecialInput() && !player.MenuVotedRecently:
-                player.MenuVoted = player.MenuVotePoolIndex;
-                player.MenuVoteDelay = 0;
-                player.MenuVotedRecently = true;
-                _playersVoted++;
-                break;
-            case >= 0 when player.GetSpecialInput() && !player.MenuVotedRecently:
-                player.MenuVoted = -1;
-                player.MenuVoteDelay = 0;
-                player.MenuVotedRecently = true;
-                _playersVoted--;
-                break;
-        }
+        if(!player.Ui.ContainsKey("VotingToggle")) {player.Ui.Add("VotingToggle", new UiInteractable());}
+        if(!player.Ui.ContainsKey("VotingSelection")) {player.Ui.Add("VotingSelection", new UiInteractable());}
         
-        switch (player.MenuVotedRecently) {
-            case true when player.MenuVoteDelay > 0.2f:
-                player.MenuVotedRecently = false;
-                player.MenuVoteDelay = 0;
-                break;
-            case true:
-                player.MenuVoteDelay += deltaTime;
-                break;
-        }
-        
-        if (player.MenuVoted != -1) return;
-        #endregion
+        UiResult votingToggle = player.Ui["VotingToggle"].UpdateInputToggle(player, deltaTime);
 
-        #region Voting Selection
-        int x = (int)Math.Clamp(player!.GetInput().X*2, -1, 1);
-
-        switch (player.MenuMoved) {
-            case false when x != 0:
-                player.MenuVotePoolIndex = LoopVotePool(player.MenuVotePoolIndex + x);
-                player.MenuMoved = true;
-                player.MenuDelay += deltaTime;
-                return;
-            case true:
-                player.MenuDelay += deltaTime;
+        switch (votingToggle) {
+            case { Triggered: true, Value: 1 }:
+                player.Voted = player.MenuVotePoolIndex;
+                break;
+            case { Triggered: true, Value: 0 }:
+                player.Voted = -1;
+                break;
+            default:
+                player.Voted = player.Voted;
                 break;
         }
 
-        switch (player.MenuDelay) {
-            case > 0.1f when x == 0:
-                player.MenuMoved = false;
-                player.MenuDelay = 0;
-                return;
-            case > 0.2f: //when x != 0:
-                player.MenuVotePoolIndex = LoopVotePool(player.MenuVotePoolIndex + x);
-                player.MenuMoved = true;
-                player.MenuDelay = 0;
-                return;
+        UiResult votingSelection = player.Ui["VotingSelection"].UpdateInputSelection(player, deltaTime, UiAxis.X, (0, _numberOfPools-1), player.MenuVotePoolIndex, true);
+
+        if (votingSelection.Triggered) {
+            player.MenuVotePoolIndex = (int)votingSelection.Value;
         }
-        #endregion
     }
-
-    int LoopVotePool(int currentVotePoolIndex)
-    {
-        return currentVotePoolIndex > _numberOfPools-1 ? 0 : currentVotePoolIndex < 0 ? _numberOfPools-1 : currentVotePoolIndex;
-    }
-
+    
     void RenderMainMenu()
     {
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Input UP to connect.", Program.LowRough), 70, "Input UP to connect.", Program.LowRough, Program.White);
@@ -162,7 +129,7 @@ public class MainMenu
         if (_playersVoted != _players.Count || _playersVoted == 0)
             return;
 
-        Utility.DrawRectangle(0, Program.ScreenSize / 2 - 40, Program.ScreenSize, 40, [150,150,150,255]);
+        DrawingUtility.DrawRectangle(0, Program.ScreenSize / 2 - 40, Program.ScreenSize, 40, [150,150,150,255]);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("All players have voted.", Program.LowRough), Program.ScreenSize / 2 - 33, "All players have voted.", Program.LowRough, Program.White);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough), Program.ScreenSize / 2 - 18, "Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough, Program.White);
     }
@@ -170,14 +137,14 @@ public class MainMenu
     void DrawVotePool(int poolIndex, string gameName, byte[] color)
     {
         int x = (int)Math.Round(Program.ScreenSize / (float)(_numberOfPools + 1) * (poolIndex + 1) - VotePoolWidth / 2f);
-        Utility.DrawRectangle(x, VotePoolYPos, VotePoolWidth, VotePoolHeight + 2, color);
-        Utility.DrawRectangle(x + 1, VotePoolYPos + 1, VotePoolWidth - 2, VotePoolHeight, Program.Black);
+        DrawingUtility.DrawRectangle(x, VotePoolYPos, VotePoolWidth, VotePoolHeight + 2, color);
+        DrawingUtility.DrawRectangle(x + 1, VotePoolYPos + 1, VotePoolWidth - 2, VotePoolHeight, Program.Black);
         FontUtility.DrawString(x + (VotePoolWidth - ((Program.LowRough.FontData.dimensions[0] * gameName.Length) + (gameName.Length - 1))) / 2, VotePoolYPos + VotePoolHeight + 4, gameName, Program.LowRough, Program.White);
     }
 
     void DrawPoolVote(int poolIndex, int voteIndex, byte[] color)
     {
         int x = (int)Math.Round(Program.ScreenSize / (float)(_numberOfPools + 1) * (poolIndex + 1) - VotePoolWidth / 2f);
-        Utility.DrawRectangle(x + 1, VotePoolYPos + 1 + VotePoolHeight/_peopleConnected * voteIndex, VotePoolWidth - 2, (VotePoolHeight/_peopleConnected), color);
+        DrawingUtility.DrawRectangle(x + 1, VotePoolYPos + 1 + VotePoolHeight/_peopleConnected * voteIndex, VotePoolWidth - 2, (VotePoolHeight/_peopleConnected), color);
     }
 }

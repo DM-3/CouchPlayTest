@@ -41,7 +41,7 @@ public static class FontUtility
         }
 
         Bitmap fontAtlas = (Bitmap)Image.FromFile(fontPath);
-        byte[] fontAtlasBytes = Utility.GetPixelData(fontAtlas);
+        byte[] fontAtlasBytes = DrawingUtility.GetPixelData(fontAtlas);
 
         List<byte[]> characterSet = [];
 
@@ -78,7 +78,7 @@ public static class FontUtility
     {
         for (int i = 0; i < font.FontData.dimensions[0] * font.FontData.dimensions[1]; i++) {
             byte charColor = (byte)(font.FontData.characterSet[c][i] / 255);
-            Utility.DrawPixel(
+            DrawingUtility.DrawPixel(
                 i%font.FontData.dimensions[0] + x, 
                 i/font.FontData.dimensions[0] + y, 
                 [(byte)(charColor * color[0]), (byte)(charColor * color[1]), (byte)(charColor * color[2]), (byte)(charColor*255)]);

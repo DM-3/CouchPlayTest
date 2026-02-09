@@ -11,7 +11,7 @@ public static class WireFrame
         int error = dx + dy;
 
         while (true) {
-            if(Utility.WithinBounds(xA, yA)) Utility.DrawPixel(xA, yA, color);
+            if(DrawingUtility.WithinBounds(xA, yA)) DrawingUtility.DrawPixel(xA, yA, color);
             int e2 = error * 2;
             if (e2 >= dy) {
                 if (xA == xB) break;
@@ -31,14 +31,14 @@ public static class WireFrame
         float t1 = radius / 16;
         int xc = radius; int yc = 0;
         while (xc > yc) {
-            if(Utility.WithinBounds(xc  + x, yc  + y)) Utility.DrawPixel(xc  + x, yc  + y, color);
-            if(Utility.WithinBounds(yc  + x, xc  + y)) Utility.DrawPixel(yc  + x, xc  + y, color);
-            if(Utility.WithinBounds(xc  + x, -yc + y)) Utility.DrawPixel(xc  + x, -yc + y, color);
-            if(Utility.WithinBounds(yc  + x, -xc + y)) Utility.DrawPixel(yc  + x, -xc + y, color);
-            if(Utility.WithinBounds(-xc + x, yc  + y)) Utility.DrawPixel(-xc + x, yc  + y, color);
-            if(Utility.WithinBounds(-yc + x, xc  + y)) Utility.DrawPixel(-yc + x, xc  + y, color);
-            if(Utility.WithinBounds(-xc + x, -yc + y)) Utility.DrawPixel(-xc + x, -yc + y, color);
-            if(Utility.WithinBounds(-yc + x, -xc + y)) Utility.DrawPixel(-yc + x, -xc + y, color);
+            if(DrawingUtility.WithinBounds(xc  + x, yc  + y)) DrawingUtility.DrawPixel(xc  + x, yc  + y, color);
+            if(DrawingUtility.WithinBounds(yc  + x, xc  + y)) DrawingUtility.DrawPixel(yc  + x, xc  + y, color);
+            if(DrawingUtility.WithinBounds(xc  + x, -yc + y)) DrawingUtility.DrawPixel(xc  + x, -yc + y, color);
+            if(DrawingUtility.WithinBounds(yc  + x, -xc + y)) DrawingUtility.DrawPixel(yc  + x, -xc + y, color);
+            if(DrawingUtility.WithinBounds(-xc + x, yc  + y)) DrawingUtility.DrawPixel(-xc + x, yc  + y, color);
+            if(DrawingUtility.WithinBounds(-yc + x, xc  + y)) DrawingUtility.DrawPixel(-yc + x, xc  + y, color);
+            if(DrawingUtility.WithinBounds(-xc + x, -yc + y)) DrawingUtility.DrawPixel(-xc + x, -yc + y, color);
+            if(DrawingUtility.WithinBounds(-yc + x, -xc + y)) DrawingUtility.DrawPixel(-yc + x, -xc + y, color);
             
             yc++;
             t1 += yc;

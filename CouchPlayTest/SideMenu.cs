@@ -1,5 +1,6 @@
 using CouchPlayTest.Drawing;
 using CouchPlayTest.Drawing.Font;
+using CouchPlayTest.Utilities;
 using Raylib_cs;
 using Font = CouchPlayTest.Drawing.Font.Font;
 
@@ -37,16 +38,16 @@ public static class SideMenu
         RenderWindow("Main Menu");
     }
 
-    public static void RenderWindow(string windowDisplayTitle)
+    static void RenderWindow(string windowDisplayTitle)
     {
         if (!IsOpen && _windowAnimation <= 0) return;
         int windowWidth = FontUtility.GetStringWidth(windowDisplayTitle, Program.LowRough) + 10;
         int xAnimation = (int)Utility.Lerp(0, windowWidth, (float)_windowAnimation / WindowAnimationTime);
-        Utility.DrawRectangle(0, 0, xAnimation, Program.ScreenSize, [160,160,160,230]);
+        DrawingUtility.DrawRectangle(0, 0, xAnimation, Program.ScreenSize, [160,160,160,230]);
 
         int textAnimation = 5 - windowWidth + xAnimation;
         
-        Utility.DrawRectangle(textAnimation-2, 8, xAnimation-6, Program.LowRough.FontData.dimensions[1]+4, [100,100,100,255]);
+        DrawingUtility.DrawRectangle(textAnimation-2, 8, xAnimation-6, Program.LowRough.FontData.dimensions[1]+4, [100,100,100,255]);
         
         FontUtility.DrawString(textAnimation, 10, windowDisplayTitle, Program.LowRough, Program.White);
     }
