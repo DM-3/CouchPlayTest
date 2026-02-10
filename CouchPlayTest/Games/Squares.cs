@@ -1,5 +1,4 @@
-using System.Runtime.CompilerServices;
-using CouchPlayTest.Drawing;
+using Color = Raylib_cs.Color;
 using CouchPlayTest.Drawing.Font;
 using CouchPlayTest.Utilities;
 
@@ -22,6 +21,6 @@ public class Squares(Player[] players) : Game(players, "Squares")
             player.Render();
             player.DrawPlayer();
         }
-        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Squares!", Program.LowRough), 10, "Welcome to Squares!", Program.LowRough, Program.Cyan);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Squares!", Program.LowRough), 10, "Welcome to Squares!", Program.LowRough, new Color(0, 255, 255));
     }
 }

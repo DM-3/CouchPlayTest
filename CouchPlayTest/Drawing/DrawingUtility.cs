@@ -10,24 +10,14 @@ namespace CouchPlayTest.Drawing;
 
 public static class DrawingUtility
 {
-    public static void DrawPixel(int x, int y, byte[] color)
-    {
-        Raylib.DrawRectangle(x*Program.PixelScale, y*Program.PixelScale, 
-            Program.PixelScale, Program.PixelScale,
-            new Color(color[0], color[1], color[2], color[3]));
-    }
+    public static void DrawPixel(int x, int y, Color color) 
+        => Raylib.DrawRectangle(x * Program.PixelScale, y * Program.PixelScale, Program.PixelScale, Program.PixelScale, color);
 
-    public static void DrawRectangle(int x, int y, int width, int height, byte[] color)
-    {
-        Raylib.DrawRectangle(x*Program.PixelScale, y*Program.PixelScale, 
-            Program.PixelScale*width, Program.PixelScale*height,
-            new Color(color[0], color[1], color[2], color[3]));
-    }
+    public static void DrawRectangle(int x, int y, int width, int height, Color color)
+        => Raylib.DrawRectangle(x * Program.PixelScale, y * Program.PixelScale, Program.PixelScale * width, Program.PixelScale * height, color);
 
     public static bool WithinBounds(int xA, int xB)
-    {
-        return (xA >= 0 && xA < Program.ScreenSize && xB >= 0 && xB < Program.ScreenSize);
-    }
+        => xA >= 0 && xA < Program.ScreenSize && xB >= 0 && xB < Program.ScreenSize;
 
     public static byte[] GetPixelData(Bitmap bitmap)
     {

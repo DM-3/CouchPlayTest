@@ -1,8 +1,10 @@
+using Color = Raylib_cs.Color;
+
 namespace CouchPlayTest.Drawing;
 
 public static class WireFrame
 {
-    public static void DrawLine(int xA, int yA, int xB, int yB, byte[] color)
+    public static void DrawLine(int xA, int yA, int xB, int yB, Color color)
     {
         int dx    = Math.Abs(xB - xA);
         int sx    = xA < xB ? 1 : -1;
@@ -26,7 +28,7 @@ public static class WireFrame
         }
     }
 
-    public static void DrawCircle(int x, int y, int radius, byte[] color)
+    public static void DrawCircle(int x, int y, int radius, Color color)
     {
         float t1 = radius / 16;
         int xc = radius; int yc = 0;

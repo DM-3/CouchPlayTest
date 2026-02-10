@@ -1,5 +1,6 @@
 #pragma warning disable CA1416
 using System.Drawing;
+using Color = Raylib_cs.Color;
 
 namespace CouchPlayTest.Drawing.Font;
 
@@ -63,7 +64,7 @@ public static class FontUtility
     }
 
     #region Drawing
-    public static void DrawCharacter(int x, int y, char c, Font font, byte[] color)
+    public static void DrawCharacter(int x, int y, char c, Font font, Color color)
     {
         if (c == ' ') return;
         if(CharacterMap.TryGetValue(c, out int charId)) { }
@@ -74,19 +75,19 @@ public static class FontUtility
         DrawCharacter(x, y, charId, font, color);
     }
 
-    static void DrawCharacter(int x, int y, int c, Font font, byte[] color)
+    static void DrawCharacter(int x, int y, int c, Font font, Color color)
     {
         for (int i = 0; i < font.FontData.dimensions[0] * font.FontData.dimensions[1]; i++) {
             byte charColor = (byte)(font.FontData.characterSet[c][i] / 255);
             DrawingUtility.DrawPixel(
                 i%font.FontData.dimensions[0] + x, 
                 i/font.FontData.dimensions[0] + y, 
-                [(byte)(charColor * color[0]), (byte)(charColor * color[1]), (byte)(charColor * color[2]), (byte)(charColor*255)]);
+                new(charColor * color.R, charColor * color.G, charColor * color.B, color.A));
         }
     }
     
     
-    public static void DrawString(int x, int y, string str, Font font, byte[] color)
+    public static void DrawString(int x, int y, string str, Font font, Color color)
     {
         ushort index = 0;
         foreach (char c in str.ToUpper()) {

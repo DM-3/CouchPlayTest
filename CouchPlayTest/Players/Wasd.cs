@@ -7,7 +7,7 @@ namespace CouchPlayTest.Players;
 
 public class Wasd : Player
 {
-    public Wasd() : base(Program.Red)
+    public Wasd() : base(Color.Red)
     {
         Transform = new Transform(Vector2.Zero);
     }

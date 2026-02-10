@@ -1,13 +1,14 @@
 using System.Data;
+using Color = Raylib_cs.Color;
 using System.Numerics;
 using CouchPlayTest.Drawing;
 using CouchPlayTest.Utilities.UI;
 
 namespace CouchPlayTest.Utilities;
 
-public abstract class Player(byte[] color)
+public abstract class Player(Color color)
 {
-    public readonly byte[] Color = color;
+    public readonly Color Color = color;
     
     public Dictionary<string, UiInteractable> Ui = [];
     
@@ -25,7 +26,7 @@ public abstract class Player(byte[] color)
         var x = (int)(Transform.Position.X - scaleX / 2);
         var y = (int)(Transform.Position.Y - scaleY / 2);
         DrawingUtility.DrawRectangle(x, y, (int)scaleX, (int)scaleY, Color);
-        DrawingUtility.DrawRectangle(x + 1, y + 1, (int)scaleX - 2, (int)scaleY - 2, [0, 0, 0, 255]);
+        DrawingUtility.DrawRectangle(x + 1, y + 1, (int)scaleX - 2, (int)scaleY - 2, new Color(0, 0, 0, 255));
     }
     public abstract Vector2 GetInput();
     public abstract bool GetSpecialInput();

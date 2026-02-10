@@ -7,7 +7,7 @@ namespace CouchPlayTest.Players;
 
 public class Arrows : Player
 {
-    public Arrows() : base(Program.Green)
+    public Arrows() : base(Color.Green)
     {
         Transform = new Transform(Vector2.Zero);
     }

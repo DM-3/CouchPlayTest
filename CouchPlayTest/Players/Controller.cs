@@ -1,5 +1,4 @@
 using System.Numerics;
-using CouchPlayTest.Drawing;
 using CouchPlayTest.Utilities;
 using Raylib_cs;
 using Transform = CouchPlayTest.Utilities.Transform;
@@ -8,7 +7,7 @@ namespace CouchPlayTest.Players;
 
 public class Controller : Player
 {
-    public Controller() : base(Program.Blue)
+    public Controller() : base(Color.Blue)
     {
         Transform = new Transform(Vector2.Zero);
     }

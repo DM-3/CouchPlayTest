@@ -1,5 +1,4 @@
-using System.Runtime.CompilerServices;
-using CouchPlayTest.Drawing;
+using Color = Raylib_cs.Color;
 using CouchPlayTest.Drawing.Font;
 using CouchPlayTest.Utilities;
 
@@ -20,6 +19,6 @@ public class Test(Player[] players) : Game(players, "Test")
         foreach (var player in _players) {
             player.Render();
         }
-        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Test!", Program.LowRough), 10, "Welcome to Test!", Program.LowRough, Program.Cyan);
+        FontUtility.DrawString(FontUtility.GetStringCenteredPos("Welcome to Test!", Program.LowRough), 10, "Welcome to Test!", Program.LowRough, new Color(0, 255, 255));
     }
 }
