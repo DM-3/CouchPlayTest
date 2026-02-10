@@ -11,7 +11,7 @@ using Font = CouchPlayTest.Drawing.Font.Font;
 
 namespace CouchPlayTest;
 
-public class MainMenu
+public class MainMenu : IScene
 {
     const int VotePoolWidth = 20;
     const int VotePoolHeight = 60;
@@ -22,11 +22,12 @@ public class MainMenu
     public static readonly List<Player> Players = [];
 
     static readonly Type[] GameTypes = [ typeof(Squares), typeof(Test)];
-    static Game? _selectedGame = null;
     static double _gameCountDown = 0;
     const int CountDownSeconds = 2;
     static int _playersVoted = 0;
-    
+
+    public string Name => "Main Menu";
+
     public static class GlobalUi
     {
         public static Dictionary<string, UiInteractable> Ui = new();
@@ -34,16 +35,13 @@ public class MainMenu
 
     public void Update(double delta)
     {
-        if (_selectedGame != null) {
-            if (SideMenu.Update(delta, true) || SideMenu.IsOpen) return;
-            _selectedGame.Update(delta);
-            return;
-        }
-        if (SideMenu.Update(delta, false) || SideMenu.IsOpen) return;
+        if (Raylib.IsKeyPressed(KeyboardKey.W) && Players.All(p => p is not Wasd)) 
+            Players.Add(new Wasd());
+        if(Raylib.IsKeyPressed(KeyboardKey.Up) && Players.All(p => p is not Arrows)) 
+            Players.Add(new Arrows());
+        if((Raylib.IsGamepadButtonPressed(0, GamepadButton.LeftFaceUp) || (Raylib.GetGamepadAxisMovement(0, GamepadAxis.LeftY) < -0.5f )) && Players.All(p => p is not Controller)) 
+            Players.Add(new Controller());
         
-        if (Raylib.IsKeyPressed(KeyboardKey.W) && Players.All(p => p is not Wasd)) Players.Add(new Wasd());
-        if(Raylib.IsKeyPressed(KeyboardKey.Up) && Players.All(p => p is not Arrows)) Players.Add(new Arrows());
-        if((Raylib.IsGamepadButtonPressed(0, GamepadButton.LeftFaceUp) || (Raylib.GetGamepadAxisMovement(0, GamepadAxis.LeftY) < -0.5f )) && Players.All(p => p is not Controller)) Players.Add(new Controller());
         _peopleConnected = Players.Count;
 
         _playersVoted = 0; 
@@ -64,45 +62,18 @@ public class MainMenu
         }
         var mostVotedIndex = Array.IndexOf(votes, votes.Max());
         
-        _selectedGame = (Activator.CreateInstance(GameTypes[mostVotedIndex], [Players.ToArray()]) as Game);
+        var newScene = Activator.CreateInstance(GameTypes[mostVotedIndex], [Players.ToArray()]) as IScene;
+        if (newScene is IScene scene)
+            Program.PushScene(scene);
+        else
+            throw new Exception($"Failed to create scene of type {GameTypes[mostVotedIndex]}.");
+
         _gameCountDown = 0;
         _playersVoted = 0;
         SideMenu.IsOpen = false;
     }
+
     public void Render()
-    {
-        if (_selectedGame != null) {
-            _selectedGame.Render();
-            SideMenu.RenderSideMenu(_selectedGame.GameName, true);
-        }
-        else {
-            RenderMainMenu();
-            SideMenu.RenderSideMenu("Main Menu", false);
-        }
-    }
-
-    void PlayerMenuController(Player player, double deltaTime)
-    {
-        player.Ui.TryAdd("VotingToggle", new UiInteractable());
-        player.Ui.TryAdd("VotingSelection", new UiInteractable());
-        
-        var votingToggle = player.Ui["VotingToggle"].UpdateInputToggle(player, deltaTime);
-
-        player.Voted = votingToggle switch
-        {
-            { Triggered: true, Value: 1 } => player.MenuVotePoolIndex,
-            { Triggered: true, Value: 0 } => -1,
-            _ => player.Voted
-        };
-
-        var votingSelection = player.Ui["VotingSelection"].UpdateInputSelection(player, deltaTime, UiAxis.X, (0, _numberOfPools-1), player.MenuVotePoolIndex, true);
-
-        if (votingSelection.Triggered) {
-            player.MenuVotePoolIndex = (int)votingSelection.Value;
-        }
-    }
-    
-    void RenderMainMenu()
     {
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Input UP to connect.", Program.LowRough), 70, "Input UP to connect.", Program.LowRough, Color.White);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Players Connected: " + _peopleConnected, Program.LowRough), 80, "Players Connected: " + _peopleConnected, Program.LowRough, Color.White);
@@ -127,16 +98,37 @@ public class MainMenu
         DrawingUtility.DrawRectangle(0, Program.ScreenSize / 2 - 40, Program.ScreenSize, 40, new Color(150,150,150,255));
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("All players have voted.", Program.LowRough), Program.ScreenSize / 2 - 33, "All players have voted.", Program.LowRough, Color.White);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough), Program.ScreenSize / 2 - 18, "Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough, Color.White);
+    
     }
 
+    void PlayerMenuController(Player player, double deltaTime)
+    {
+        player.Ui.TryAdd("VotingToggle", new UiInteractable());
+        player.Ui.TryAdd("VotingSelection", new UiInteractable());
+        
+        var votingToggle = player.Ui["VotingToggle"].UpdateInputToggle(player, deltaTime);
+
+        player.Voted = votingToggle switch
+        {
+            { Triggered: true, Value: 1 } => player.MenuVotePoolIndex,
+            { Triggered: true, Value: 0 } => -1,
+            _ => player.Voted
+        };
+
+        var votingSelection = player.Ui["VotingSelection"].UpdateInputSelection(player, deltaTime, UiAxis.X, (0, _numberOfPools-1), player.MenuVotePoolIndex, true);
+
+        if (votingSelection.Triggered) {
+            player.MenuVotePoolIndex = (int)votingSelection.Value;
+        }
+    }
+    
     public static void ReturnToMainMenu()
     {
-        SideMenu.IsOpen = false;
-        _selectedGame = null;
-        
+        SideMenu.IsOpen = false;        
         foreach (var ui in Players.SelectMany(player => player.Ui.Values)) {
             ui.Reset();
         }
+        Program.PopScene();
     }
     
     void DrawVotePool(int poolIndex, string gameName, Color color)

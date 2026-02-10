@@ -1,4 +1,6 @@
-﻿using Raylib_cs;
+﻿using System.Collections.Generic;
+using CouchPlayTest.Utilities;
+using Raylib_cs;
 using Font = CouchPlayTest.Drawing.Font.Font;
 
 namespace CouchPlayTest;
@@ -11,7 +13,9 @@ class Program
     
     public static readonly Font LowRough = new(@"Data/FontAtlases\5_7_1_LowRough.png");
     public static readonly Font TitleRough = new(@"Data/FontAtlases\10_14_1_TitleRough.png");
-    
+
+    private static Stack<IScene> _sceneStack = [];
+
     static void Main(string[] args)
     {
         double previousTime = Raylib.GetTime();
@@ -21,22 +25,36 @@ class Program
         Raylib.ClearBackground(Color.Black);
         Raylib.SetTargetFPS(60);
 
-        MainMenu mainMenu = new();
+        _sceneStack.Push(new MainMenu());
         SideMenu.Init();
         
         while (!Raylib.WindowShouldClose())
         {
-            mainMenu.Update(deltaTime);
-            
+            var activeScene = _sceneStack.Peek();
+
+            // update logic
+            if (!SideMenu.Update(deltaTime, activeScene is Game) && !SideMenu.IsOpen)
+                activeScene.Update(deltaTime);
+
+            // update graphics
             Raylib.ClearBackground(Color.Black);
-            
             Raylib.BeginDrawing();
-            mainMenu.Render();
+            activeScene.Render();
+            SideMenu.RenderSideMenu(activeScene.Name, activeScene is Game);
             Raylib.EndDrawing();
             
             var currentTime = Raylib.GetTime();
             deltaTime = currentTime - previousTime;
             previousTime = currentTime;
         }
+    }
+
+    public static void PushScene(IScene scene)
+        => _sceneStack.Push(scene);
+    
+    public static void PopScene()
+    {
+        if (_sceneStack.Count > 1)
+            _sceneStack.Pop();
     }
 }
