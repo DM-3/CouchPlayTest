@@ -5,6 +5,7 @@ public class UiInteractable
     double _interactionDelay = 0.0f;
     bool _interactedRecently = false;
     bool _buttonDownLastFrame = false;
+    bool _blockNextFrame = false;
 
     public readonly record struct UiResult(
         bool Triggered,
@@ -19,6 +20,12 @@ public class UiInteractable
     
     public UiResult UpdateInputButton(Player player, double deltaTime)
     {
+        if (_blockNextFrame)
+        {
+            _blockNextFrame = false;
+            return new UiResult(false, 0);
+        }
+        
         bool triggered = player.GetSpecialInput();
 
         if (_buttonDownLastFrame) _interactionDelay += deltaTime; else _interactionDelay = 0; 
@@ -29,6 +36,13 @@ public class UiInteractable
     
     public UiResult UpdateInputToggle(Player player, double deltaTime)
     {
+        if (_blockNextFrame)
+        {
+            _blockNextFrame = false;
+            return new UiResult(false, 0);
+        }
+
+        
         bool value = false;
         
         bool triggered = player.GetSpecialInput();
@@ -61,8 +75,14 @@ public class UiInteractable
         return new UiResult(justPressed, value ? 1 : 0);
     }
     
-    public UiResult UpdateInputSelection(Player player, double deltaTime, UiAxis axis, (int min, int max) range, int index, bool enableLooping)
+    public UiResult UpdateInputSelection(Player player, double deltaTime, UiAxis axis, (int min, int max) range, int index, bool enableLooping, bool invertDir = false)
     {
+        if (_blockNextFrame)
+        {
+            _blockNextFrame = false;
+            return new UiResult(false, 0);
+        }
+        
         bool triggered = false;
 
         float axisValue = axis switch
@@ -72,7 +92,7 @@ public class UiInteractable
             _ => 0
         };
 
-        int raw = (int)Math.Clamp(axisValue * 4f, -1f, 1f);
+        int raw = (int)Math.Clamp((invertDir ? -axisValue : axisValue) * 4f, -1f, 1f);
         
         switch (_interactedRecently) {
             case false when raw != 0:
@@ -104,6 +124,14 @@ public class UiInteractable
         return new UiResult(triggered, index);
     }
     
+    public void Reset()
+    {
+        _interactionDelay = 0.0f;
+        _interactedRecently = false;
+        _buttonDownLastFrame = true;
+        _blockNextFrame = true;
+    }
+
     public static int Loop((int min, int max) loop, int index)
     {
         if (index < loop.min) index = loop.max;

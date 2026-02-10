@@ -84,7 +84,7 @@ public static class FontUtility
                 [(byte)(charColor * color[0]), (byte)(charColor * color[1]), (byte)(charColor * color[2]), (byte)(charColor*255)]);
         }
     }
-
+    
     
     public static void DrawString(int x, int y, string str, Font font, byte[] color)
     {
@@ -96,7 +96,7 @@ public static class FontUtility
                 Console.WriteLine("Warning: \'" + c + "\' is not a recognized character.");
                 _unrecognizedCharacters.Add(c);
             }
-            DrawCharacter((byte)(x + (font.FontData.dimensions[0] + 1) * index++), y, charId, font, color);
+            DrawCharacter(x + (font.FontData.dimensions[0] + 1) * index++, y, charId, font, color);
         }
     }
     #endregion
@@ -110,4 +110,9 @@ public static class FontUtility
     {
         return Program.ScreenSize / 2 - GetStringWidth(str, font) / 2;
     }
+    public static int GetStringCenteredPos(string str, Font font, (int left, int right) of)
+    {
+        return of.left + ((of.right - of.left) - GetStringWidth(str, font)) / 2;
+    }
+
 }

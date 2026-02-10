@@ -34,6 +34,7 @@ class Program
         Raylib.SetTargetFPS(60);
 
         MainMenu mainMenu = new();
+        SideMenu.Init();
         
         while (!Raylib.WindowShouldClose())
         {

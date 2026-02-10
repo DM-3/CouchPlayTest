@@ -20,7 +20,7 @@ public class MainMenu
     readonly int _numberOfPools = GameTypes.Length;
 
     int _peopleConnected;
-    readonly List<Player> _players = [];
+    public static readonly List<Player> Players = [];
 
     static readonly Type[] GameTypes = [ typeof(Squares), typeof(Test)];
     static Game? _selectedGame = null;
@@ -28,79 +28,75 @@ public class MainMenu
     const int CountDownSeconds = 2;
     static int _playersVoted = 0;
     
+    public static class GlobalUi
+    {
+        public static Dictionary<string, UiInteractable> Ui = new();
+    }
+
     public void Update(double delta)
     {
-        SideMenu.Update(delta);
-        
         if (_selectedGame != null) {
+            if (SideMenu.Update(delta, true) || SideMenu.IsOpen) return;
             _selectedGame.Update(delta);
             return;
         }
+        if (SideMenu.Update(delta, false) || SideMenu.IsOpen) return;
         
-        if(Raylib.IsKeyDown(KeyboardKey.W) && _players.All(p => p.GetType() != new Wasd().GetType())) _players.Add(new Wasd());
-        if(Raylib.IsKeyDown(KeyboardKey.Up) && _players.All(p => p.GetType() != new Arrows().GetType())) _players.Add(new Arrows());
-        if((Raylib.IsGamepadButtonDown(0, GamepadButton.LeftFaceUp) || (Raylib.GetGamepadAxisMovement(0, GamepadAxis.LeftY) < -0.5f )) && _players.All(p => p.GetType() != new Controller().GetType())) _players.Add(new Controller());
-        _peopleConnected = _players.Count;
+        if (Raylib.IsKeyPressed(KeyboardKey.W) && Players.All(p => p is not Wasd)) Players.Add(new Wasd());
+        if(Raylib.IsKeyPressed(KeyboardKey.Up) && Players.All(p => p is not Arrows)) Players.Add(new Arrows());
+        if((Raylib.IsGamepadButtonPressed(0, GamepadButton.LeftFaceUp) || (Raylib.GetGamepadAxisMovement(0, GamepadAxis.LeftY) < -0.5f )) && Players.All(p => p is not Controller)) Players.Add(new Controller());
+        _peopleConnected = Players.Count;
 
         _playersVoted = 0; 
-        foreach (var player in _players) {
+        foreach (var player in Players) {
             PlayerMenuController(player, delta);
-            if (player.Voted != -1) _playersVoted++; else if(_playersVoted!=0) _playersVoted--;
         }
+        _playersVoted = Players.Count(p => p.Voted != -1);
 
-        if (_playersVoted == _players.Count && _players.Count > 0) {
-            _gameCountDown += delta;
-        } else {
-            _gameCountDown = 0;
-        }
+        var allVoted = Players.Count > 0 && _playersVoted == Players.Count;
+        _gameCountDown = allVoted ? _gameCountDown + delta : 0;
 
-        if (_gameCountDown >= CountDownSeconds) {
-            _playersVoted = 0;
-            var votes = new int[GameTypes.Length];
-            foreach (var player in _players) {
-                votes[player.Voted]++;
-                player.Voted = -1;
-            }
-            var mostVotedIndex = 0;
-            for (var i = 0; i < votes.Length; i++) {
-                if (votes[i] > votes[mostVotedIndex]) mostVotedIndex = i;
-            }
-            _selectedGame = (Activator.CreateInstance(GameTypes[mostVotedIndex], [_players.ToArray()]) as Game);
-            SideMenu.IsOpen = false;
+        if (!(_gameCountDown >= CountDownSeconds)) return;
+        
+        var votes = new int[GameTypes.Length];
+        foreach (var player in Players) {
+            votes[player.Voted]++;
+            player.Voted = -1;
         }
+        var mostVotedIndex = Array.IndexOf(votes, votes.Max());
+        
+        _selectedGame = (Activator.CreateInstance(GameTypes[mostVotedIndex], [Players.ToArray()]) as Game);
+        _gameCountDown = 0;
+        _playersVoted = 0;
+        SideMenu.IsOpen = false;
     }
     public void Render()
     {
         if (_selectedGame != null) {
             _selectedGame.Render();
-            SideMenu.RenderGameSideMenu(_selectedGame.GameName);
+            SideMenu.RenderSideMenu(_selectedGame.GameName, true);
         }
         else {
             RenderMainMenu();
-            SideMenu.RenderMainSideMenu();
+            SideMenu.RenderSideMenu("Main Menu", false);
         }
     }
 
     void PlayerMenuController(Player player, double deltaTime)
     {
-        if(!player.Ui.ContainsKey("VotingToggle")) {player.Ui.Add("VotingToggle", new UiInteractable());}
-        if(!player.Ui.ContainsKey("VotingSelection")) {player.Ui.Add("VotingSelection", new UiInteractable());}
+        player.Ui.TryAdd("VotingToggle", new UiInteractable());
+        player.Ui.TryAdd("VotingSelection", new UiInteractable());
         
-        UiResult votingToggle = player.Ui["VotingToggle"].UpdateInputToggle(player, deltaTime);
+        var votingToggle = player.Ui["VotingToggle"].UpdateInputToggle(player, deltaTime);
 
-        switch (votingToggle) {
-            case { Triggered: true, Value: 1 }:
-                player.Voted = player.MenuVotePoolIndex;
-                break;
-            case { Triggered: true, Value: 0 }:
-                player.Voted = -1;
-                break;
-            default:
-                player.Voted = player.Voted;
-                break;
-        }
+        player.Voted = votingToggle switch
+        {
+            { Triggered: true, Value: 1 } => player.MenuVotePoolIndex,
+            { Triggered: true, Value: 0 } => -1,
+            _ => player.Voted
+        };
 
-        UiResult votingSelection = player.Ui["VotingSelection"].UpdateInputSelection(player, deltaTime, UiAxis.X, (0, _numberOfPools-1), player.MenuVotePoolIndex, true);
+        var votingSelection = player.Ui["VotingSelection"].UpdateInputSelection(player, deltaTime, UiAxis.X, (0, _numberOfPools-1), player.MenuVotePoolIndex, true);
 
         if (votingSelection.Triggered) {
             player.MenuVotePoolIndex = (int)votingSelection.Value;
@@ -116,22 +112,32 @@ public class MainMenu
         FontUtility.DrawString(10, 200, "Players Voted: " + _playersVoted, Program.LowRough, Program.White);
 
         FontUtility.DrawString(10, 10, "Controllers Connected:", Program.LowRough, Program.White);
-        if (_players.Any(p => p is Wasd)) FontUtility.DrawString(10, 18, "WASD", Program.LowRough, Program.White);
-        if (_players.Any(p => p is Arrows)) FontUtility.DrawString(10, 26, "Arrows", Program.LowRough, Program.White);
-        if (_players.Any(p => p is Controller)) FontUtility.DrawString(10, 34, "Controller", Program.LowRough, Program.White);
+        if (Players.Any(p => p is Wasd)) FontUtility.DrawString(10, 18, "WASD", Program.LowRough, Program.White);
+        if (Players.Any(p => p is Arrows)) FontUtility.DrawString(10, 26, "Arrows", Program.LowRough, Program.White);
+        if (Players.Any(p => p is Controller)) FontUtility.DrawString(10, 34, "Controller", Program.LowRough, Program.White);
 
         for (var g = 0; g < GameTypes.Length; g++)
             DrawVotePool(g, GameTypes[g].Name, Program.White);
 
-        for (var p = 0; p < _players.Count; p++)
-            DrawPoolVote(_players[p].MenuVotePoolIndex, p, _players[p].Color);
+        for (var p = 0; p < Players.Count; p++)
+            DrawPoolVote(Players[p].MenuVotePoolIndex, p, Players[p].Color);
 
-        if (_playersVoted != _players.Count || _playersVoted == 0)
+        if (_playersVoted != Players.Count || _playersVoted == 0)
             return;
 
         DrawingUtility.DrawRectangle(0, Program.ScreenSize / 2 - 40, Program.ScreenSize, 40, [150,150,150,255]);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("All players have voted.", Program.LowRough), Program.ScreenSize / 2 - 33, "All players have voted.", Program.LowRough, Program.White);
         FontUtility.DrawString(FontUtility.GetStringCenteredPos("Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough), Program.ScreenSize / 2 - 18, "Game Starting in " + (CountDownSeconds - _gameCountDown).ToString("0.0") + " seconds.", Program.LowRough, Program.White);
+    }
+
+    public static void ReturnToMainMenu()
+    {
+        SideMenu.IsOpen = false;
+        _selectedGame = null;
+        
+        foreach (var ui in Players.SelectMany(player => player.Ui.Values)) {
+            ui.Reset();
+        }
     }
     
     void DrawVotePool(int poolIndex, string gameName, byte[] color)
@@ -144,6 +150,7 @@ public class MainMenu
 
     void DrawPoolVote(int poolIndex, int voteIndex, byte[] color)
     {
+        if (_peopleConnected == 0) return;
         int x = (int)Math.Round(Program.ScreenSize / (float)(_numberOfPools + 1) * (poolIndex + 1) - VotePoolWidth / 2f);
         DrawingUtility.DrawRectangle(x + 1, VotePoolYPos + 1 + VotePoolHeight/_peopleConnected * voteIndex, VotePoolWidth - 2, (VotePoolHeight/_peopleConnected), color);
     }
