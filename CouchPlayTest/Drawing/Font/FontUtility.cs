@@ -6,7 +6,9 @@ namespace CouchPlayTest.Drawing.Font;
 
 public static class FontUtility
 {
+    //Store invalid characters to not spam console with warnings; 
     static HashSet<char> _unrecognizedCharacters = [];
+    //Dictionary to loop up a character via char and get character id (int) back.
     static readonly Dictionary<char, int> CharacterMap = new Dictionary<char, int>()
     {
         {'A',  0 }, {'B', 1 }, {'C', 2 },
@@ -33,6 +35,7 @@ public static class FontUtility
     };
 
     
+    //A probably unoptimized method to Convert a font atlas (custom texture atlas) to a list of characters;
     public static (int[] dimensions, List<byte[]> characterSet) GetCharacterSet(string fontPath)
     {
         int[] dimensions = new int[3];
@@ -64,6 +67,8 @@ public static class FontUtility
     }
 
     #region Drawing
+    //User-friendly method of drawing a single character to the screen;
+    //Writes a console warning if it can not find the character in the character map;
     public static void DrawCharacter(int x, int y, char c, Font font, Color color)
     {
         if (c == ' ') return;
@@ -75,6 +80,7 @@ public static class FontUtility
         DrawCharacter(x, y, charId, font, color);
     }
 
+    //Draws a character from a character id to x, y: anchor top left, from font in color.
     static void DrawCharacter(int x, int y, int c, Font font, Color color)
     {
         for (int i = 0; i < font.FontData.dimensions[0] * font.FontData.dimensions[1]; i++) {
@@ -86,7 +92,7 @@ public static class FontUtility
         }
     }
     
-    
+    //Turns a string into a list of characters gets the character id from each and draws that character at x + (character width + 1) * character position in string, y
     public static void DrawString(int x, int y, string str, Font font, Color color)
     {
         ushort index = 0;
@@ -103,17 +109,11 @@ public static class FontUtility
     #endregion
 
     public static int GetStringWidth(string str, Font font)
-    {
-        return  font.FontData.dimensions[0] * str.Length + (str.Length - 1);
-    }
-    
-    public static int GetStringCenteredPos(string str, Font font)
-    {
-        return Program.ScreenSize / 2 - GetStringWidth(str, font) / 2;
-    }
-    public static int GetStringCenteredPos(string str, Font font, (int left, int right) of)
-    {
-        return of.left + ((of.right - of.left) - GetStringWidth(str, font)) / 2;
-    }
+        => font.FontData.dimensions[0] * str.Length + (str.Length - 1);
 
+    public static int GetStringCenteredPos(string str, Font font) 
+        => Program.ScreenSize / 2 - GetStringWidth(str, font) / 2;
+    
+    public static int GetStringCenteredPos(string str, Font font, (int left, int right) of)
+        => of.left + ((of.right - of.left) - GetStringWidth(str, font)) / 2;
 }

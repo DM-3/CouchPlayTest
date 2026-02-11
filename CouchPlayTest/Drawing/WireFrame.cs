@@ -4,6 +4,10 @@ namespace CouchPlayTest.Drawing;
 
 public static class WireFrame
 {
+    //Todo: Comment explanations and optimize.
+    //Unused, maybe used later;
+    //File subject to change and optimizations;
+    
     public static void DrawLine(int xA, int yA, int xB, int yB, Color color)
     {
         int dx    = Math.Abs(xB - xA);

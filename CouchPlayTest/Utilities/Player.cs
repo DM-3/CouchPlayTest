@@ -12,7 +12,8 @@ public abstract class Player(Color color)
     
     public Dictionary<string, UiInteractable> Ui = [];
     
-    public int MenuVotePoolIndex;
+    //Player vote information;
+    public int VotePoolIndex;
     public int Voted = -1;
 
     public Transform Transform;
@@ -21,6 +22,7 @@ public abstract class Player(Color color)
     public abstract void Render();
     public virtual void DrawPlayer()
     {
+        //Draws generic player sprite, however games do not have to use this;
         var scaleX = 6 * Transform.Scale.X;   
         var scaleY = 6 * Transform.Scale.Y;   
         var x = (int)(Transform.Position.X - scaleX / 2);
