@@ -6,8 +6,10 @@ namespace CouchPlayTest.Drawing;
 
 public class Font
 {
+    //Store invalid characters to not spam console with warnings;
     static HashSet<char> _unrecognizedCharacters = [];
     
+    //Dictionary to loop up a character via char and get character id (int) back.
     public static readonly Dictionary<char, int> CharacterMap = new Dictionary<char, int>()
     {
         {'A',  0 }, {'B', 1 }, {'C', 2 },
@@ -38,6 +40,7 @@ public class Font
 
     public Font(string fontFilePath)
     {
+        //A probably unoptimized method to Convert a font atlas (custom texture atlas) to a list of characters;
         int[] dimensions = new int[3];
         string[] parseDimensions = fontFilePath.Split('\\').Last().Split('_');
         for(var i = 0; i < 3; i++) {
@@ -67,6 +70,8 @@ public class Font
         this.FontData = (dimensions, characterSet);
     }
 
+    //User-friendly method of drawing a single character to the screen;
+    //Writes a console warning if it can not find the character in the character map;
     public void DrawCharacter(int x, int y, char c, Color color)
     {
         if (char.IsWhiteSpace(c)) return;
@@ -77,6 +82,7 @@ public class Font
             Console.WriteLine("Warning: \'" + c + "\' is not a recognized character.");
     }
 
+    //Draws a character from a character id to x, y: anchor top left, from font in color.
     private void DrawCharacter(int x, int y, int charId, Color color)
     {
         for (int i = 0; i < FontData.dimensions[0] * FontData.dimensions[1]; i++) 
@@ -89,6 +95,7 @@ public class Font
         }
     }
     
+    //Turns a string into a list of characters gets the character id from each and draws that character at x + (character width + 1) * character position in string, y
     public void DrawString(int x, int y, string str, Color color)
     {
         foreach (char c in str.ToUpper())

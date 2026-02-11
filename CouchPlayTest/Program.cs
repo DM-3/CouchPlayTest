@@ -5,6 +5,9 @@ namespace CouchPlayTest;
 
 class Program
 {
+    //Files without comments are most likely going to change a lot, except obvious files like Transform;
+    //Comments at the top of the file/class are general for the file or project;
+    
     public const string Title = "Couch Play Test";
     public const int ScreenSize = 256;
     public const int PixelScale = 3;

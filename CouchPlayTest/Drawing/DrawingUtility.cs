@@ -10,12 +10,15 @@ namespace CouchPlayTest.Drawing;
 
 public static class DrawingUtility
 {
+    //Sets a scaled pixel at x, y to color;
     public static void DrawPixel(int x, int y, Color color) 
         => Raylib.DrawRectangle(x * Program.PixelScale, y * Program.PixelScale, Program.PixelScale, Program.PixelScale, color);
 
+    //Sets an area of scaled pixels at x to x + width, y to y + height to color;
     public static void DrawRectangle(int x, int y, int width, int height, Color color)
         => Raylib.DrawRectangle(x * Program.PixelScale, y * Program.PixelScale, Program.PixelScale * width, Program.PixelScale * height, color);
-
+    
+    //Converts a Bitmap into a byte array. Reason: Much faster, and more recommended than GetPixel();
     public static byte[] GetPixelData(Bitmap bitmap)
     {
         BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
@@ -29,9 +32,14 @@ public static class DrawingUtility
         } 
     }
 
+    //Checks if an x, y coord is within the screen bounds;
     public static bool IsOnScreen(int x, int y)
         => x >= 0 && x < Program.ScreenSize && y >= 0 && y < Program.ScreenSize;
 
+    //Todo: Comment explanations and optimize.
+    //Unused, maybe used later;
+    //File subject to change and optimizations;
+    //If possible, use raylib functions directly
     public static void DrawLine(int xA, int yA, int xB, int yB, Color color)
     {
         int dx    = Math.Abs(xB - xA);

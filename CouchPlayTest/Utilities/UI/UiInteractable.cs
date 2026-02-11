@@ -2,6 +2,9 @@ namespace CouchPlayTest.Utilities.UI;
 
 public class UiInteractable
 {
+    //Todo: Comment explanations.
+    //File subject to a lot of change however.
+    
     double _interactionDelay = 0.0f;
     bool _interactedRecently = false;
     bool _buttonDownLastFrame = false;

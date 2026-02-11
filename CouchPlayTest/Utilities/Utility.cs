@@ -2,8 +2,10 @@ using System.Numerics;
 
 namespace CouchPlayTest.Utilities;
 
-public class Utility
+public static class Utility
 {
+    //General use math utilities;
+    
     public static Vector2 ClampMagnitude(Vector2 v, float maxLength)
     {
         float length = v.Length();
